@@ -175,8 +175,8 @@
 <script>
   const imagesPerPage = 10;
   let topics = [
-      { title: 'Leadership', code: 'PH', count: 181, images: [] },
-      { title: 'Motivation', code: 'TH', count: 85, images: [] },
+      { title: 'Leadership', code: 'LE', count: 181, images: [] },
+      { title: 'Motivation', code: 'MO', count: 85, images: [] },
       { title: 'Productivity', code: 'PO', count: 41, images: [] }
   ];
 
@@ -202,7 +202,7 @@
           imgElement.style.opacity = 1;
         };
         imgElement.onerror = () => {
-          imgElement.src = 'https://inspire360.github.io/lead/content/error.jpg';
+          imgElement.src = 'https://inspire360.github.io/lead/contents/error.jpg';
         };
       }
     }, 200);
@@ -267,7 +267,7 @@
   function loadImages() {
     for (let i = 0; i < topics.length; i++) {
       for (let j = 1; j <= topics[i].count; j++) {
-          let url = `https://inspire360.github.io/lead/content/${topics[i].code}/${j}.jpg`;
+          let url = `https://inspire360.github.io/lead/contents/${topics[i].code}/${j}.jpg`;
         topics[i].images.push(url);
       }
     }
