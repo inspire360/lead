@@ -109,12 +109,11 @@
     }
 
     #imageCounter {
-		min-width: 60px;
-		font-weight: normal; /* <- removed bold */
-		font-size: 1.2rem;
-		color: #343a40;
-	}
-
+      min-width: 60px;
+      font-weight: normal;
+      font-size: 1.2rem;
+      color: #343a40;
+    }
 
     #pagination {
       display: flex;
@@ -127,9 +126,10 @@
       padding: 0.5rem;
     }
 
+    /* UPDATED pagination button and input sizing */
     #pagination .btn {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
+      font-size: 1rem;
+      padding: 0.5rem 0.75rem;
       border-radius: 0.25rem;
       background-color: #f8f9fa;
       border: 1px solid #ced4da;
@@ -155,14 +155,14 @@
     }
 
     #pagination .input-group {
-      max-width: 100px;
+      max-width: 150px;
       flex-wrap: nowrap;
     }
 
     #pagination input.form-control {
-      width: 45px;
-      padding: 0.25rem 0.3rem;
-      font-size: 0.75rem;
+      width: 60px;
+      padding: 0.4rem 0.5rem;
+      font-size: 1rem;
       text-align: center;
     }
 
@@ -187,9 +187,12 @@
         display: block;
       }
 
+      /* Keep arrows in same line on mobile */
       .nav-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
+        flex-direction: row;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
       }
     }
   </style>
@@ -215,7 +218,7 @@
   <!-- Main Content -->
   <div class="main-content">
     <div class="photo-frame">
-      <img id="topicImage" src="" alt="Topic Image" />
+      <img id="topicImage" src="" alt="Topic Image" loading="lazy" />
     </div>
 
     <!-- Navigation Buttons -->
@@ -258,6 +261,7 @@
 
     const imgElement = document.getElementById('topicImage');
     imgElement.style.opacity = 0;
+    imgElement.dataset.errorHandled = "";
 
     setTimeout(() => {
       if (paginatedImages.length > 0) {
@@ -269,8 +273,14 @@
           imgElement.style.opacity = 1;
         };
         imgElement.onerror = () => {
-          imgElement.src = 'https://inspire360.github.io/lead/contents/error.jpg';
+          if (!imgElement.dataset.errorHandled) {
+            imgElement.dataset.errorHandled = "true";
+            imgElement.src = 'https://inspire360.github.io/lead/contents/error.jpg';
+          }
         };
+      } else {
+        imgElement.src = '';
+        document.getElementById('imageCounter').textContent = '0 / 0';
       }
     }, 200);
   }
@@ -301,11 +311,16 @@
 
   function changeImage(direction) {
     const topic = topics[currentTopicIndex];
-    const paginatedImages = topic.images.slice((currentPage - 1) * imagesPerPage, currentPage * imagesPerPage);
-    if (!paginatedImages.length) return;
+    const totalImages = topic.images.length;
 
-    currentImageIndex = (currentImageIndex + direction + paginatedImages.length) % paginatedImages.length;
+    let globalImageIndex = (currentPage - 1) * imagesPerPage + currentImageIndex;
+    globalImageIndex = (globalImageIndex + direction + totalImages) % totalImages;
+
+    currentPage = Math.floor(globalImageIndex / imagesPerPage) + 1;
+    currentImageIndex = globalImageIndex % imagesPerPage;
+
     updateDisplay();
+    renderPagination();
   }
 
   function renderPagination() {
@@ -325,7 +340,7 @@
     };
 
     createButton('«', () => { currentPage = 1; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === 1);
-    createButton('‹', () => { currentPage--; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === 1);
+    createButton('‹', () => { if(currentPage > 1) { currentPage--; currentImageIndex = 0; updateDisplay(); renderPagination(); } }, currentPage === 1);
 
     const inputGroup = document.createElement('div');
     inputGroup.className = 'input-group input-group-sm';
@@ -364,7 +379,7 @@
     inputGroup.appendChild(wrapper);
     paginationDiv.appendChild(inputGroup);
 
-    createButton('›', () => { currentPage++; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === totalPages);
+    createButton('›', () => { if(currentPage < totalPages) { currentPage++; currentImageIndex = 0; updateDisplay(); renderPagination(); } }, currentPage === totalPages);
     createButton('»', () => { currentPage = totalPages; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === totalPages);
   }
 
