@@ -47,7 +47,7 @@
     }
 
     .active-topic {
-      background-color: orange !important;
+      background-color: #fd7e14 !important;
       color: white !important;
       font-weight: bold;
     }
@@ -97,7 +97,53 @@
     }
 
     #pagination {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
       margin-top: 10px;
+      overflow-x: auto;
+      padding: 0.5rem;
+    }
+
+    #pagination .btn {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    #pagination .btn:hover {
+      background-color: #e2e6ea;
+      color: #000;
+    }
+
+    #pagination .btn-accent {
+      background-color: #fd7e14;
+      border-color: #fd7e14;
+      color: white;
+    }
+
+    #pagination .btn-accent:hover {
+      background-color: #e76e0c;
+      border-color: #e76e0c;
+      color: white;
+    }
+
+    #pagination .input-group {
+      max-width: 100px;
+      flex-wrap: nowrap;
+    }
+
+    #pagination input.form-control {
+      width: 45px;
+      padding: 0.25rem 0.3rem;
+      font-size: 0.75rem;
+      text-align: center;
     }
 
     .hamburger-btn {
@@ -121,7 +167,6 @@
         display: block;
       }
 
-      /* Stack nav buttons vertically on mobile */
       .nav-buttons {
         flex-direction: column;
         gap: 0.5rem;
@@ -138,14 +183,14 @@
 
 <div class="d-flex flex-wrap">
   <!-- Sidebar -->
-    <nav class="sidebar d-flex flex-column p-3">
-        <div class="mb-4 ps-2">
-            <span class="fs-4"><i class="fas fa-lightbulb"></i> Lead</span>
-        </div>
-        <button class="btn topic-btn" onclick="loadTopic('Leadership')"><i class="fas fa-gears"></i> Leadership</button>
-        <button class="btn topic-btn" onclick="loadTopic('Motivation')"><i class="fas fa-brain"></i> Motivation</button>
-        <button class="btn topic-btn" onclick="loadTopic('Productivity')"><i class="fas fa-lightbulb"></i> Productivity</button>
-    </nav>
+  <nav class="sidebar d-flex flex-column p-3">
+    <div class="mb-4 ps-2">
+      <span class="fs-4"><i class="fas fa-lightbulb"></i> Lead</span>
+    </div>
+    <button class="btn topic-btn" onclick="loadTopic('Leadership')"><i class="fas fa-gears"></i> Leadership</button>
+    <button class="btn topic-btn" onclick="loadTopic('Motivation')"><i class="fas fa-brain"></i> Motivation</button>
+    <button class="btn topic-btn" onclick="loadTopic('Productivity')"><i class="fas fa-lightbulb"></i> Productivity</button>
+  </nav>
 
   <!-- Main Content -->
   <div class="main-content">
@@ -164,8 +209,8 @@
       </button>
     </div>
 
-    <!-- Pagination Buttons -->
-    <div id="pagination" class="mt-3 d-flex flex-wrap justify-content-center gap-2"></div>
+    <!-- Pagination -->
+    <div id="pagination" class="mt-3"></div>
   </div>
 </div>
 
@@ -175,9 +220,9 @@
 <script>
   const imagesPerPage = 10;
   let topics = [
-      { title: 'Leadership', code: 'LE', count: 469, images: [] },
-      { title: 'Motivation', code: 'MO', count: 1, images: [] },
-      { title: 'Productivity', code: 'PO', count: 1, images: [] }
+    { title: 'Leadership', code: 'LE', count: 469, images: [] },
+    { title: 'Motivation', code: 'MO', count: 1, images: [] },
+    { title: 'Productivity', code: 'PO', count: 1, images: [] }
   ];
 
   let currentTopicIndex = 0;
@@ -234,9 +279,7 @@
 
   function changeImage(direction) {
     const topic = topics[currentTopicIndex];
-    const startIndex = (currentPage - 1) * imagesPerPage;
-    const paginatedImages = topic.images.slice(startIndex, startIndex + imagesPerPage);
-
+    const paginatedImages = topic.images.slice((currentPage - 1) * imagesPerPage, currentPage * imagesPerPage);
     if (!paginatedImages.length) return;
 
     currentImageIndex = (currentImageIndex + direction + paginatedImages.length) % paginatedImages.length;
@@ -250,24 +293,63 @@
     const topic = topics[currentTopicIndex];
     const totalPages = Math.ceil(topic.images.length / imagesPerPage);
 
-    for (let i = 1; i <= totalPages; i++) {
+    const createButton = (label, handler, disabled = false) => {
       const btn = document.createElement('button');
-      btn.className = 'btn btn-sm ' + (i === currentPage ? 'btn-dark' : 'btn-outline-dark');
-      btn.textContent = i;
-      btn.onclick = () => {
-        currentPage = i;
+      btn.className = 'btn btn-sm';
+      btn.textContent = label;
+      btn.disabled = disabled;
+      btn.onclick = handler;
+      paginationDiv.appendChild(btn);
+    };
+
+    createButton('«', () => { currentPage = 1; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === 1);
+    createButton('‹', () => { currentPage--; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === 1);
+
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group input-group-sm';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = 1;
+    input.max = totalPages;
+    input.value = currentPage;
+    input.className = 'form-control';
+
+    const goBtn = document.createElement('button');
+    goBtn.className = 'btn btn-sm btn-outline-secondary';
+    goBtn.textContent = 'Go';
+    goBtn.onclick = () => {
+      const enteredPage = parseInt(input.value);
+      if (!isNaN(enteredPage) && enteredPage >= 1 && enteredPage <= totalPages) {
+        currentPage = enteredPage;
         currentImageIndex = 0;
         updateDisplay();
         renderPagination();
-      };
-      paginationDiv.appendChild(btn);
-    }
+      } else {
+        alert(`Enter a number between 1 and ${totalPages}`);
+      }
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goBtn.click();
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'input-group-append';
+    wrapper.appendChild(goBtn);
+
+    inputGroup.appendChild(input);
+    inputGroup.appendChild(wrapper);
+    paginationDiv.appendChild(inputGroup);
+
+    createButton('›', () => { currentPage++; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === totalPages);
+    createButton('»', () => { currentPage = totalPages; currentImageIndex = 0; updateDisplay(); renderPagination(); }, currentPage === totalPages);
   }
 
   function loadImages() {
     for (let i = 0; i < topics.length; i++) {
       for (let j = 1; j <= topics[i].count; j++) {
-          let url = `https://inspire360.github.io/lead/contents/${topics[i].code}/${j}.jpg`;
+        let url = `https://inspire360.github.io/lead/contents/${topics[i].code}/${j}.jpg`;
         topics[i].images.push(url);
       }
     }
