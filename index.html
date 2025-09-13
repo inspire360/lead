@@ -89,12 +89,32 @@
       width: 100%;
     }
 
-    #imageCounter {
-      min-width: 60px;
-      font-weight: 700;
-      font-size: 1.2rem;
-      color: #343a40;
+    .nav-buttons .btn i {
+      font-size: 1.5rem;
+      transition: color 0.3s;
     }
+
+    .nav-buttons .btn {
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .nav-buttons .btn:hover {
+      background-color: #fd7e14;
+      border-color: #fd7e14;
+      color: white;
+    }
+
+    .nav-buttons .btn:hover i {
+      color: white;
+    }
+
+    #imageCounter {
+		min-width: 60px;
+		font-weight: normal; /* <- removed bold */
+		font-size: 1.2rem;
+		color: #343a40;
+	}
+
 
     #pagination {
       display: flex;
@@ -177,7 +197,7 @@
 <body>
 
 <!-- Hamburger Button for Mobile -->
-<button class="btn btn-dark m-2 d-md-none hamburger-btn" onclick="toggleSidebar()">
+<button class="btn btn-dark m-2 d-md-none hamburger-btn" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
   <i class="fas fa-bars"></i>
 </button>
 
@@ -200,12 +220,12 @@
 
     <!-- Navigation Buttons -->
     <div class="nav-buttons">
-      <button class="btn btn-outline-dark" onclick="changeImage(-1)">
-        <i class="fas fa-chevron-left"></i> Previous
+      <button class="btn btn-outline-dark" onclick="changeImage(-1)" aria-label="Previous Image">
+        <i class="fa-solid fa-chevron-left"></i>
       </button>
       <div id="imageCounter">1</div>
-      <button class="btn btn-outline-dark" onclick="changeImage(1)">
-        Next <i class="fas fa-chevron-right"></i>
+      <button class="btn btn-outline-dark" onclick="changeImage(1)" aria-label="Next Image">
+        <i class="fa-solid fa-chevron-right"></i>
       </button>
     </div>
 
@@ -234,12 +254,14 @@
     const startIndex = (currentPage - 1) * imagesPerPage;
     const paginatedImages = topic.images.slice(startIndex, startIndex + imagesPerPage);
 
+    currentImageIndex = Math.min(currentImageIndex, paginatedImages.length - 1);
+
     const imgElement = document.getElementById('topicImage');
     imgElement.style.opacity = 0;
 
     setTimeout(() => {
       if (paginatedImages.length > 0) {
-        const imageToShow = paginatedImages[currentImageIndex % paginatedImages.length];
+        const imageToShow = paginatedImages[currentImageIndex];
         imgElement.src = imageToShow;
         imgElement.alt = `${topic.title} image ${startIndex + currentImageIndex + 1}`;
         document.getElementById('imageCounter').textContent = `${startIndex + currentImageIndex + 1} / ${topic.images.length}`;
